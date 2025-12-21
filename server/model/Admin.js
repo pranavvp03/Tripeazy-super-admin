@@ -7,6 +7,7 @@ const adminSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true },
     password: { type: String, required: true },
     gender: { type: String, required: true },
+    status:{type:String,default:"active"},
     role: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: "Role", 

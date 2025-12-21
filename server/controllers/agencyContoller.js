@@ -48,3 +48,20 @@ exports.updateAgencyStatus= async (req,res)=>{
          }
 
 }
+exports.searchAgency =async  (req,res)=>{
+   const {search} = req.query 
+    console.log(search)
+ try{ 
+   const response = await agency.find({companyName:{$regex:search,$options:'i'}})
+   if(response.length ===0){
+     res.status(404).json({message:`There is no agency for ${search}`})
+     return
+   }
+   res.status(200).json({message:"agency found", response})
+   console.log(response)
+
+ }catch(error){
+  console.log(error," error while search agency")
+  res.status(500).json({message:"error occured while search agency",error})
+ }
+}

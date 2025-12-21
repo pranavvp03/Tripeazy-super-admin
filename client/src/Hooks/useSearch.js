@@ -34,12 +34,12 @@ const useSearch = () => {
 
   
 
-  useEffect(() => {
-    console.log(searchAdmin,"search admin")
-    if (searchAdmin.length === 0) {
-      setFilteredAdmin([]);
-    }
-  }, [searchAdmin]);
+  // useEffect(() => {
+  //   console.log(searchAdmin,"search admin")
+  //   if (searchAdmin.length === 0) {
+  //     setFilteredAdmin([]);
+  //   }
+  // }, [searchAdmin]);
 
   
 

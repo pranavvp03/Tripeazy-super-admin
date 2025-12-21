@@ -12,3 +12,7 @@ export const searchAdmins=(admins)=>({
     type:"SEARCH_ADMINS",
     payload:admins
 })
+export const singleRole =(value)=>({
+    type:"SINGLE_ROLE",
+    payload:value
+})

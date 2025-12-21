@@ -17,8 +17,8 @@ function ManageRole() {
             'Authorization' : `Bearer ${token} `
           }
          })
-          const data= response.data.roles
-          console.log(data);
+          const data= response.data
+          console.log(data,"this is response ");
           setRole(data)
           
 

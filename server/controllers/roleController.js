@@ -22,8 +22,8 @@ exports.getRole = async (req,res)=>{
 
     
     try {
-        const roles = await Role.find({ roleName: { $ne: "SuperAdmin01" } });
-        res.status(200).json({roles})
+        const roles = await Role.find();
+        res.status(200).json(roles)
     } catch (error) {
         console.log("error fetching roles",error.messsage);
         res.status(500).json({message:"Failed to fetch roles",error:error.message})

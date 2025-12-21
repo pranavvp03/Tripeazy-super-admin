@@ -1,7 +1,11 @@
+import { singleRole } from "../actions/roleAction";
+
 const initialState = {
     Permissions: [], 
       Role:[],
-      Admins:[]
+      Admins:[],
+      SingleRole:""
+
 }
 
 const roleReducers = (state= initialState, action)=>{
@@ -20,6 +24,12 @@ const roleReducers = (state= initialState, action)=>{
             return{
                 ...state,
                 Admins:action.payload
+
+            }
+         case 'SINGLE_ROLE':
+            return{
+                ...state,
+                SingleRole:action.payload
 
             }
 

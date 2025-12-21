@@ -48,6 +48,7 @@ exports.createAdmin = async (req, res) => {
                   email,
                   phoneNumber,
                   gender,
+                  status:"active",
                   role: role._id
                   // file
                  })

@@ -1,16 +1,16 @@
 import { BrowserRouter as Router, Routes, Route} from "react-router-dom"
 import { Toaster } from "react-hot-toast";
-import Login from './pages/Login' 
-import Home from './pages/Home'
-import Agencies from './pages/agencies'
-import Users from './pages/users'
-import Packages from './pages/packages'
-import Blogs from './pages/Blog.jsx/BlogList'
-import CreateAdmin from './pages/createAdminTab/CreateAdmin'
-import Advertisements from './pages/Advertisements'
-import Notifications from './pages/notifications/Notifications'
-import AdminDashboardLayout from './components/Admin-layout'
-import CreateNewAdmin from "./pages/createAdminTab/CreateNewAdmin"
+import Login from './pages/Login';
+import Home from './pages/Home';
+import Agencies from './pages/agencies';
+import Users from './pages/users';
+import Packages from './pages/packages';
+import Blogs from './pages/Blog.jsx/BlogList';
+import CreateAdmin from './pages/createAdminTab/CreateAdmin';
+import Advertisements from './pages/Advertisements';
+import Notifications from './pages/notifications/Notifications';
+import AdminDashboardLayout from './components/Admin-layout';
+import CreateNewAdmin from "./pages/createAdminTab/CreateNewAdmin";
 import Addrole from "./pages/ManageRole/Addrole";
 import ManageRole from "./pages/ManageRole/ManageRole";
 import CommonNav from "./components/CommonNav";

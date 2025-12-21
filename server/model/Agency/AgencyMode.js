@@ -42,6 +42,14 @@ const AgencySchema = new mongoose.Schema({
  status:{
     type:String,
     default:"Requested"
+  },
+  image: {
+    type: String,
+    default: null,
+  },
+  document: {
+    type: String,
+    default: null
   }
 });
 

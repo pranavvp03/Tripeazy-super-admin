@@ -182,13 +182,14 @@ function People() {
                 </thead>
                 {filteredAgencies.length > 0 ? (
           filteredAgencies.map((agencies) => (
+            
 
                 <tbody 
                 key={agencies._id || agencies.id}
                 className="divide-y divide-gray-100 border-t border-gray-100">
                   <tr className="hover:bg-gray-50">
                     <td className="px-5 py-5 bg-white text-sm flex items-center gap-3">
-                      <img className="h-10 w-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2.2&w=160&h=160&q=80" alt="" />
+                      <img className="h-10 w-10 rounded-full object-cover" src={agencies.image} alt="" />
                       <span className="text-gray-900">{agencies.companyName}</span>
                     </td>
                     <td className="px-5 py-5 bg-white text-sm text-gray-900">{agencies.email}</td>

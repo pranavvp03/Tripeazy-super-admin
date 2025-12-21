@@ -31,9 +31,11 @@
     "react-loader-spinner": "^6.1.6",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.2.0",
+    "react-slick": "^0.30.3",
     "react-toastify": "^11.0.5",
     "recharts": "^2.15.1",
     "shadcn-ui": "^0.9.4",
+    "slick-carousel": "^1.8.1",
     "tailwind-merge": "^3.0.1",
     "tailwind-variants": "^0.3.1",
     "tailwindcss-animate": "^1.0.7"

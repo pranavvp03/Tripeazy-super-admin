@@ -1,13 +1,38 @@
-import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import ProfileDropdown from "../components/ProfileMenu"; // Ensure correct path
+import React, { useEffect, useState } from "react";
+import { useLocation, NavLink } from "react-router-dom";
+import { FaPlus } from "react-icons/fa";
+import ProfileDropdown from "../components/ProfileMenu"; 
+import ProfileRole from "./ProfileRole";
+import EditName from "./EditName";
+import axios from "axios";
 
 const Profiles = () => {
-  const location = useLocation();
+  const location = useLocation()
   const agency = location.state?.agency;
   const [hovered, setHovered] = useState(false);
-  console.log(agency);
-
+  const [editname, setEditName]= useState(false)
+  const [data,setData]= useState()
+  console.log(agency)
+  useEffect(()=>{
+     const fetchPersoDetail= async ()=>{
+      const token = localStorage.getItem("token")
+       try{
+         const response = await axios.get ("http://localhost:3001/api/profile/getProfile",
+        {
+          headers:{
+            'Authorization': `Bearer ${token}`
+          }
+        }
+         )
+         setData(response.data.response)
+        
+       }catch(error){
+        cosnole.log(error)
+       }
+     }
+     fetchPersoDetail()
+  },[])
+ console.log(data,"this is personl data")
   return (
     <>
       <nav className="bg-gray-900 border-gray-200 -mr-2 -mt-1 rounded-t-md flex flex-col items-center h-32">
@@ -33,7 +58,10 @@ const Profiles = () => {
           </div>
         </a>
         <div className="flex items-center justify-center w-full">
-          <h1 className="text-white text-3xl mt-2"> Agency Profile</h1>
+          <h1 className="text-white text-3xl mt-2"> Admin Profile</h1>
+        </div>
+        <div>
+       
         </div>
         <div className="flex items-center justify-between w-full px-4 mt-2">
           <div className="flex items-center space-x-3">
@@ -54,24 +82,50 @@ const Profiles = () => {
         </div>
       </nav>
 
-      <div className="min-h-screen p-6 bg-white flex flex-col items-center h-screen">
-        <div className="bg-white rounded-lg shadow-xl p-8 grid grid-cols-3 gap-6 w-screen max-w-5xl border border-gray-200 ">
-          {/* Profile Picture */}
-          <div className="flex flex-col items-center">
-            <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-blue-500 flex items-center justify-center bg-gray-200 shadow-lg">
-              <img src={agency.image} alt="" />
-            </div>
-            <h3 className="text-xl font-semibold mt-4 text-gray-900">
-              {agency?.companyName}
-            </h3>
-          </div>
+      
+<div className="min-h-80% p-4 bg-white flex flex-row items-center">
 
-          {/* Company and Contact Info */}
-          <div className="border-l border-gray-300 pl-6">
-            {[{ label: "Company Name", value: agency?.companyName },
-              { label: "Email", value: agency?.email },
-              { label: "Country", value: agency?.countryname },
-              { label: "City", value: agency?.cityName },
+        
+       {/* <h2 className="text-3xl font-bold text-gray-800 mb-6">
+       Agency Profile
+        </h2> */}
+
+      <div className="bg-white rounded-lg shadow-xl w-2/5 h-3/4 p-20 mr-3 flex flex-row items-center justify-center flex-wrap  max-w-5xl border ">
+        <div className="flex flex-col ">
+           <h1 className="text-3xl text-black flex mb-2">{data?.name}</h1> 
+
+         <h2 className="text-lg flex text-blue-900 ml-5 ">{data?.role.roleName}</h2>
+        </div>
+
+          <div
+              className="relative h-64 w-64 rounded-full overflow-hidden border-4  border-blue-500 flex items-center justify-center bg-gray-200 shadow-lg"
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+            >
+              {/* <span className="text-6xl font-bold uppercase text-blue-600">
+                {agency?.companyName ? agency.companyName[0] : "?"}
+              </span> */}
+              <img src="profilephoto.jpg" alt="" />
+              {hovered && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full cursor-pointer">
+                  <FaPlus className="text-white text-4xl" />
+                </div>
+              )}
+            </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-xl p-8 grid grid-cols-3 gap-6 w-50%  max-w-5xl border border-gray-200 ">
+          
+         
+
+          
+          <div className=" border-gray-300 pl-6">
+            {[
+              { label: "Admin Name", value: data?.name },
+              { label: "Email", value: data?.email },
+              { label: "Password", value: "*****"},
+              { label: "Phone No", value: data?.phoneNumber },
+              { label: "Gender", value: data?.gender },
+              { label: "Status", value: data?.status },
             ].map((item) => (
               <div key={item.label} className="mb-5">
                 <p className="text-sm font-semibold text-gray-500">
@@ -80,13 +134,21 @@ const Profiles = () => {
                 <p className="mt-1 text-lg text-gray-900 font-medium">
                   {item.value || "N/A"}
                 </p>
+               
               </div>
             ))}
           </div>
+ 
+          
+          <div className=" border-gray-300 pl-6 text-right">
+            <h1 className="mt-1 text-base text-gray-900 font-medium end-0 mb-32 hover:text-blue-700 hover:underline"><button onClick={()=>setEditName(true)}>edit</button></h1>
+           
+            <h1 className="mt-1 text-base text-gray-900 font-medium end-0 ml-40   hover:text-blue-700 hover:underline"> <button >Update</button> </h1>
+           
+            
 
-          {/* State and Other Details */}
-          <div className="border-l border-gray-300 pl-6">
-            {[{ label: "State", value: agency?.stateName },
+            {/* {[ hover:text-blue-700 hover:underline
+              { label: "State", value: agency?.stateName },
               { label: "Phone", value: agency?.contactNO },
               { label: "Registration Id", value: agency?.registrationId },
             ].map((item) => (
@@ -98,30 +160,18 @@ const Profiles = () => {
                   {item.value || "N/A"}
                 </p>
               </div>
-            ))}
+            ))} */}
           </div>
+          
         </div>
-
-        {/* Display Document directly */}
-        {agency?.document && (
-          <div className="mt-6 w-full max-w-3xl bg-white p-6 rounded-lg shadow-xl border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Agency Attached Document</h3>
-            {agency.document.endsWith(".pdf") ? (
-              <div className="w-full h-96">
-                <iframe
-                  src={agency.document}
-                  title="Agency Document"
-                  width="100%"
-                  height="100%"
-                  frameBorder="0"
-                ></iframe>
-              </div>
-            ) : (
-              <img src={agency.document} alt="Document" className="w-full max-w-2xl h-auto" />
-            )}
-          </div>
-        )}
+       
       </div>
+       <div className="mb-10">
+          <ProfileRole role={data?.role}/>
+
+         { editname&&<EditName initialName={data?.name} onClose={()=>setEditName(false)}/>}
+        </div>
+        
     </>
   );
 };

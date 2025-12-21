@@ -8,7 +8,8 @@ const roleRoutes = require("./routes/roleRoutes");
 const newAdminRouter  = require("./routes/newAdmin")
 const agency= require("./routes/agency")
 const blogRouter = require("./routes/blog.route")
-
+const packageRouter= require("./routes/packageRoute")
+const profileRouter = require("./routes/profileRotuter")
 dotenv.config()
 app.use(express.json())
 // app.use(express());
@@ -21,7 +22,9 @@ app.use("/api/roles", roleRoutes);
 app.use("/api/admins",newAdminRouter)
 app.use("/api/agency",agency)
 app.use("/api/blogs",blogRouter)
- 
+app.use("/api/packages",packageRouter)
+app.use("/api/profile",profileRouter)
+
 mongoose
 .connect(process.env.MONGO_URI)
 .then(()=>console.log(`mongodb connected successfully...😎`))

@@ -119,6 +119,16 @@ function CreateAdmin() {
                 </li>
                 <li>
                   <NavLink
+                    to="/suspendedAdmin"
+                    className={({ isActive }) =>
+                      `p-2 rounded-lg ${isActive ? 'text-white text-lg underline decoration-blue-400' : 'text-gray-600'}`
+                    }
+                  >
+                    Suspended
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
                     to="/createNewAdmin"
                     className={({ isActive }) =>
                       `p-2 rounded-lg ${isActive ? 'bg-blue-500 text-white' : 'text-gray-600 font-sans hover:text-white hover:text-lg hover:underline decoration-blue-500 hover:scale-105 hover:shadow-lg transition duration-700'}`

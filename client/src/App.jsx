@@ -15,7 +15,7 @@ import Addrole from "./pages/ManageRole/Addrole";
 import ManageRole from "./pages/ManageRole/ManageRole";
 import CommonNav from "./components/CommonNav";
 import ViewProfile from "./pages/createAdminTab/ViewProfile";
-
+import SuspendedAdmin from "./pages/createAdminTab/SuspendedAdmin";
 // import Navbar from "./components/Navbar"
 import NoAuthorized from "./components/NoAuthorized"
 import RestrictRoute from "./components/RestrictRoute"
@@ -44,10 +44,12 @@ function App() {
       <Route path = "/notifications" element = {<RestrictRoute  requiredPermission="Notifications"> <Notifications/></RestrictRoute>}/>
       <Route path = "/blogs/:blogId" element = {<RestrictRoute  requiredPermission="Blogs"> <AdminBlogDetails/></RestrictRoute>}/>
       <Route path ="/createNewAdmin" element = { <CreateNewAdmin/>}/>
+      <Route path ="/suspendedAdmin" element = { <SuspendedAdmin/>}/>
       <Route path ="/addrole" element={<Addrole/>}/>
       <Route path ="/commonNav" element={<CommonNav/>}/>
       <Route path ="/profileView" element={<ViewProfile/>}/>
       <Route path ="/profile" element={<ProfileModal/>}/>
+      
 
       {/* <Route path="/nav" element={<Navbar/>}/> */}
       </Route>

@@ -6,7 +6,7 @@ const Role =require("../model/role")
 
 
 exports.getNewAdmin= async (req,res)=>{
-  console.log("admin data fetching...")
+  // console.log("admin data fetching...")
   
   try{
     const admins = await Admin.find({ name: { $ne: "superadmin" },status:"active" }).populate("role");
@@ -25,6 +25,7 @@ exports.getNewAdmin= async (req,res)=>{
 exports.updateAdminStatus =async (req,res)=>{
   const {id}= req.params
   const {status} =req.body
+  console.log(status,id,"this is for")
   try{
     const response = await Admin.findByIdAndUpdate(id,
       {status:status },
@@ -68,5 +69,18 @@ exports.updateRole = async (req, res) => {
   }
 };
 
+exports.getSuspendedAdmin = async(req,res)=>{
+   try{
+    const admins = await Admin.find({ name: { $ne: "superadmin" },status:"deActive" }).populate("role");
+    const fullRole = await Role.find()
+    res.status(200).send({message:"Admins fetched successfully",admins:admins,role:fullRole})
+    // console.log(admins)
+  }
+  catch(error){
+     res.status(500).send(error.message)
+     console.log(error)
+     
+  }
 
+}
 

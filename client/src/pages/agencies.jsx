@@ -1,90 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { NavLink } from 'react-router-dom';
-import ProfileDropdown from '../components/ProfileMenu';
-import ProfileModal from './profilePop';
-import toast from 'react-hot-toast';
+
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { NavLink } from "react-router-dom";
+import toast from "react-hot-toast";
+import ProfileDropdown from "../components/ProfileMenu";
+import { AgencySearch } from "../../src/Hooks/agencySearch";
 
 function People() {
-  
-  const [agency, setAgency] = useState([]);
-  const [isOpen,setIsOpen] =useState(false)
-  const [selectedStatus,setSelectedStatus]=useState("Requested")
-  const [searchInput,setSearchInput]=useState("")
-  const [firstValue,setFirstValue]=useState([])
-  // const [viewAgency,setViewAgency]=useState("")
-  // const[status,setStatus]=useState([])
-  // const [acceptButton,setAcceptButton]=useState("Accept")
-  // const [rejectButton,setRejectButton]=useState("Reject")
-  
+  const [allAgencies, setAllAgencies] = useState([]);
+  const [agencies, setAgencies] = useState([]); 
+  const [selectedStatus, setSelectedStatus] = useState("Requested");
+  const [searchInput, setSearchInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
 
+ 
   useEffect(() => {
     const fetchAgencies = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get("http://localhost:3001/api/agency/fetchAgency");
+        const response = await axios.get(
+          "http://localhost:3001/api/agency/fetchAgency"
+        );
         if (Array.isArray(response.data)) {
-          setAgency(response.data);
-          const requestedAgencies = agency.filter(item => item.status === "Requested");
-          
+          setAllAgencies(response.data);
+          setAgencies(response.data);
         } else {
-          console.error("Expected an array but received:", response.data);
+          console.error("Expected an array but got:", response.data);
+          toast.error("Unexpected response format from server");
         }
       } catch (error) {
-        console.log("Can't get agencies", error);
+        console.error("Can't get agencies", error);
+        toast.error("Can't get agencies");
+      } finally {
+        setLoading(false);
       }
     };
     fetchAgencies();
   }, []);
 
-  console.log("Agency data fetched successfully",agency);
- console.log(firstValue,"this is requeste")
-  const handleButton = async (id,value)=>{
-   console.log(id)
-   console.log(value)
+  
+  const handleSearch = async (value) => {
+    const query = value?.trim() ?? "";
 
+    if (!query) {
+      setAgencies(allAgencies); 
+      return;
+    }
 
-    try{
-       const response= await axios.put(`http://localhost:3001/api/agency/updateStatus/${id}`,{
-        status:value
+    setSearching(true);
+    try {
+      const result = await AgencySearch(query); 
+      console.log(result, "search result array");
 
-       })
-       console.log(response.data)
-       setAgency((prev)=>
-        prev.map((agency)=>
-          agency._id === id ?{...agency,status:value} :agency
-        )
-       )
-       
-       const data= response.data
-
-       console.log(data ,"after updation")
-       if(data.status === "Accepted"){
-        toast.success("You Accepted Agency")
-        return
-       }  
-       if(data.status === "Rejected"){
-        toast.error("You Rejected Agency")
-        return 
-      } 
-      if(data.status === "Blocked"){
-        toast.error("You Blocked the Agency")
-        return 
+      if (Array.isArray(result) && result.length > 0) {
+        setAgencies(result);
+        // toast.success(
+        //   `${result.length} agenc${result.length === 1 ? "y" : "ies"} found`
+        // );
+      } else {
+        setAgencies([]);
+        toast.error(`No agency named "${query}" found`);
       }
-         
-      
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 404) {
+          toast.error(`There is no agency named "${query}"`);
+        } else if (status) {
+          toast.error(`Request failed with status ${status}`);
+        } else if (err.request) {
+          toast.error("No response from server. Please check your connection.");
+        } else {
+          toast.error("Unexpected error occurred.");
+        }
+      } else {
+        toast.error("Unexpected error occurred.");
+      }
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  
+  const handleButton = async (id, value) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3001/api/agency/updateStatus/${id}`,
+        { status: value }
+      );
+
+      const updated = response.data;
+
      
-    }catch(error){
-      console.log(error)
-    } 
+      setAllAgencies((prev) =>
+        prev.map((a) => (a._id === id ? { ...a, status: value } : a))
+      );
+      setAgencies((prev) =>
+        prev.map((a) => (a._id === id ? { ...a, status: value } : a))
+      );
+
+      if (updated.status === "Accepted") {
+        toast.success("You accepted the agency");
+      } else if (updated.status === "Rejected") {
+        toast.error("You rejected the agency");
+      } else if (updated.status === "Blocked") {
+        toast.error("You blocked the agency");
+      } else if (updated.status === "Accepted") {
+        toast.success("You unblocked the agency");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update status");
+    }
+  };
+
+  
+  const filteredAgencies = useMemo(() => {
+    return agencies.filter((a) => a.status === selectedStatus);
+  }, [agencies, selectedStatus]);
 
  
-   }
-   const filteredAgencies= agency.filter((agency)=>agency.status === selectedStatus)
-   console.log(filteredAgencies);
-   const handleSearch = ()=>{
-    
-   }
-  
   return (
     <>
       <div>
@@ -95,165 +131,191 @@ function People() {
           <div className="flex items-center justify-between w-full px-4 mt-2">
             <div className="flex items-center space-x-3">
               <a href="https://flowbite.com/">
-                <img src="https://flowbite.com/docs/images/logo.svg" className="h-8" alt="Flowbite Logo" />
+                <img
+                  src="https://flowbite.com/docs/images/logo.svg"
+                  className="h-8"
+                  alt="Flowbite Logo"
+                />
               </a>
-              <span className="self-center text-2xl font-semibold whitespace-nowrap text-white">Trippeazy</span>
+              <span className="self-center text-2xl font-semibold whitespace-nowrap text-white">
+                Trippeazy
+              </span>
             </div>
             <div className="align-flex -mt-2">
               <ProfileDropdown />
             </div>
           </div>
-          {/* <div className='flex items-center justify-center w-full'>
-            <NavLink
-              to="/manage-Role"
-              className={({ isActive }) =>
-                `p-2 rounded-lg ${isActive ? " text-white text-lg underline decoration-blue-400" : "text-gray-600"}`
-              }
-            >
-              Existing Role
-            </NavLink>
-            <NavLink
-              to="/addrole"
-              className={({ isActive }) =>
-                `p-2 rounded-lg ${isActive ? "bg-blue-500 text-white" : "text-gray-600 font-sans hover:text-white hover:text-lg hover:underline decoration-blue-500 hover:scale-105 transition duration-700"}`
-              }
-            >
-              Create New One
-            </NavLink>
-          </div> */}
         </nav>
       </div>
+
       <div className="bg-white p-8 rounded-md w-full">
         <div className="flex items-center justify-between pb-6">
-         
-          <div className="flex items-start ">
-  <select 
-    className=" w-60 px-4 py-2 border border-gray-400  rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-   defaultValue=""
-   onChange={(e)=>setSelectedStatus(e.target.value)}
-  >
-    <option className='' value="Requested" disabled hidden>Sort Agencies by</option>
-    <option value="Requested">Requested</option>
-    <option value="Accepted">Accepted</option>
-    <option value="Rejected">Rejected</option>
-    <option value="Blocked">Blocked</option>
-
-  </select>
-</div>
-
- <div className="flex items-end">
- <div class="">
-  <div class="max-w-xl">
-    
-    <div class="flex space-x-2 items-center mb-4"
-    
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <p class="text-white text-lg font-semibold">Please enter something</p>
-    </div>
-
-  
-    <div class="flex w-full rounded-md overflow-hidden shadow-md">
-      <input type="text" placeholder="Search here..." class="w-full px-4 py-3 text-gray-900 border-none focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-l-md"
-      value={searchInput}
-      onChange={(e)=>{setSearchInput(e.target.value),handleSearch}}
-      />
-      <button class="bg-indigo-600 text-white px-6 text-lg font-semibold py-3 rounded-r-md hover:bg-indigo-700 transition duration-300">Go</button>
-    </div>
-  </div>
-</div>
-
+        
+          <div className="flex items-start">
+            <select
+              className="w-60 px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
+              <option value="Requested">Requested</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Blocked">Blocked</option>
+            </select>
           </div>
 
-        </div>
        
-            <div  className="overflow-x-auto">
-              <table className="min-w-full leading-normal shadow rounded-lg overflow-hidden">
-                <thead>
-                  <tr className="bg-gray-100 text-gray-600 text-xs font-semibold uppercase tracking-wider">
-                    <th className="px-5 py-3 text-left">Company Name</th>
-                    <th className="px-5 py-3 text-left">Email</th>
-                    <th className="px-5 py-3 text-left">Country</th>
-                    {/* <th className="px-5 py-3 text-left">Registration Id</th> */}
-                    <th className="px-5 py-3 text-left">Status</th>
-                  </tr>
-                </thead>
-                {filteredAgencies.length > 0 ? (
-          filteredAgencies.map((agencies) => (
-
-                <tbody 
-                key={agencies._id || agencies.id}
-                className="divide-y divide-gray-100 border-t border-gray-100">
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-5 py-5 bg-white text-sm flex items-center gap-3">
-                      <img className="h-10 w-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2.2&w=160&h=160&q=80" alt="" />
-                      <span className="text-gray-900">{agencies.companyName}</span>
-                    </td>
-                    <td className="px-5 py-5 bg-white text-sm text-gray-900">{agencies.email}</td>
-                    <td className="px-5 py-5 bg-white text-sm text-gray-900">{agencies.country}</td>
-                    {/* <td className="px-5 py-5 bg-white text-sm text-gray-900">{agencies.registrationId}</td> */}
-                    <td className="px-5 py-5 bg-white text-sm">
-                    { (agencies.status === "Rejected" || agencies.status === "Requested") &&
-                       < button 
-                      data-id={agency?._id} 
-                      value={agencies._id}
-                      onClick={(e)=>handleButton(e.target.value,"Accepted")}
-                      className=" mr-4 relative inline-block px-3 py-1 font-semibold text-green-900 bg-green-200 rounded-full">Accept</button>
+          <div className="flex items-end">
+            <div className="max-w-xl">
+              <div className="flex w-full rounded-md overflow-hidden shadow-md">
+                <input
+                  type="text"
+                  placeholder="Search here..."
+                  className="w-full px-4 py-3 text-gray-900 border-none focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-l-md"
+                  value={searchInput}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchInput(value);
+                    if (!value.trim()) {
+                      setAgencies(allAgencies);
                     }
-                     { agencies.status === "Requested"  &&
-                      <button 
-                      data-id={agency._id}
-                      value={agencies._id}
-                      onClick={(e)=>handleButton(e.target.value,"Rejected")}
-
-                      className=" ml-5  relative inline-block px-3 py-1 font-semibold text-white bg-red-600 rounded-full">Reject</button>
-                     }
-
-                      { agencies.status === "Accepted"  &&
-                      <button 
-                      data-id={agency._id}
-                      value={agencies._id}
-                      onClick={(e)=>handleButton(e.target.value,"Blocked")}
-
-                      className=" ml-5  relative inline-block px-3 py-1 font-semibold text-white bg-red-600 rounded-full">Block</button>
-                     }
-
-                    { agencies.status === "Blocked"  &&
-                      <button 
-                      data-id={agency._id}
-                      value={agencies._id}
-                      onClick={(e)=>handleButton(e.target.value,"Accepted")}
-
-                       className=" ml-5  relative inline-block px-3 py-1 font-semibold text-white bg-blue-700 rounded-full">Un Block</button>
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch(searchInput);
                     }
-                    </td>
-                    {/* <td className="px-5 py-5 bg-white text-sm">
-                      
-                    </td> */}
-                   <NavLink
-                     to="/profile"
-                     
-                     
-                     state={{agency:agency.find((a)=>a._id=== agencies._id)}}
-                     className="px-4 py-2 bg-white text-sm text-blue-600 underline hover:text-blue-800 transition duration-300"
-                  >
-                   View More
-                   </NavLink>  
-                    
-                  </tr>
-                  {/* {isOpen && <ProfileModal isOpens={isOpen} />} */}
-                </tbody>
-                
-                 ))
-                ) : (
-                  <p className="text-center text-gray-500">{`No ${selectedStatus} Agencies found 🤷‍♂️`}</p>
-                )}
-              </table>
-              
+                  }}
+                />
+                <button
+                  className="bg-indigo-600 text-white px-6 text-lg font-semibold py-3 rounded-r-md hover:bg-indigo-700 transition duration-300 disabled:opacity-50"
+                  onClick={() => handleSearch(searchInput)}
+                  disabled={searching}
+                >
+                  {searching ? "Searching..." : "Go"}
+                </button>
+              </div>
             </div>
-         
+          </div>
+        </div>
+
+       
+        {loading ? (
+          <p className="text-center text-gray-500">Loading agencies…</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full leading-normal shadow rounded-lg overflow-hidden">
+              <thead>
+                <tr className="bg-gray-100 text-gray-600 text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-5 py-3 text-left">Company Name</th>
+                  <th className="px-5 py-3 text-left">Email</th>
+                  <th className="px-5 py-3 text-left">Country</th>
+                  <th className="px-5 py-3 text-left">Status</th>
+                  <th className="px-5 py-3 text-left">Action</th>
+                </tr>
+              </thead>
+
+              {filteredAgencies.length > 0 ? (
+                filteredAgencies.map((ag) => (
+                  <tbody
+                    key={ag._id || ag.id}
+                    className="divide-y divide-gray-100 border-t border-gray-100"
+                  >
+                    <tr className="hover:bg-gray-50">
+                      <td className="px-5 py-5 bg-white text-sm flex items-center gap-3">
+                        <img
+                          className="h-10 w-10 rounded-full object-cover"
+                          src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2.2&w=160&h=160&q=80"
+                          alt=""
+                        />
+                        <span className="text-gray-900">{ag.companyName}</span>
+                      </td>
+                      <td className="px-5 py-5 bg-white text-sm text-gray-900">
+                        {ag.email}
+                      </td>
+                      <td className="px-5 py-5 bg-white text-sm text-gray-900">
+                        {ag.country}
+                      </td>
+
+                      <td className="px-5 py-5 bg-white text-sm">
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                            ag.status === "Accepted"
+                              ? "bg-green-100 text-green-800"
+                              : ag.status === "Rejected" ||
+                                ag.status === "Blocked"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {ag.status}
+                        </span>
+                      </td>
+
+                     
+                      <td className="px-5 py-5 bg-white text-sm flex items-center gap-3">
+                        {(ag.status === "Rejected" ||
+                          ag.status === "Requested") && (
+                          <button
+                            onClick={() => handleButton(ag._id, "Accepted")}
+                            className="px-3 py-1 font-semibold text-green-900 bg-green-200 rounded-full"
+                          >
+                            Accept
+                          </button>
+                        )}
+
+                        {ag.status === "Requested" && (
+                          <button
+                            onClick={() => handleButton(ag._id, "Rejected")}
+                            className="px-3 py-1 font-semibold text-white bg-red-600 rounded-full"
+                          >
+                            Reject
+                          </button>
+                        )}
+
+                        {ag.status === "Accepted" && (
+                          <button
+                            onClick={() => handleButton(ag._id, "Blocked")}
+                            className="px-3 py-1 font-semibold text-white bg-red-600 rounded-full"
+                          >
+                            Block
+                          </button>
+                        )}
+
+                        {ag.status === "Blocked" && (
+                          <button
+                            onClick={() => handleButton(ag._id, "Accepted")}
+                            className="px-3 py-1 font-semibold text-white bg-blue-700 rounded-full"
+                          >
+                            Unblock
+                          </button>
+                        )}
+
+                        
+                        <NavLink
+                          to="/profile"
+                          state={{
+                            agency: allAgencies.find((a) => a._id === ag._id),
+                          }}
+                          className="px-3 py-1 font-semibold text-blue-600 underline hover:text-blue-800"
+                        >
+                          View More
+                        </NavLink>
+                      </td>
+                    </tr>
+                  </tbody>
+                ))
+              ) : (
+                <tbody>
+                  <tr>
+                    <td colSpan={5} className="text-center text-gray-500 p-6">
+                      {`No ${selectedStatus} Agencies found 🤷‍♂️`}
+                    </td>
+                  </tr>
+                </tbody>
+              )}
+            </table>
+          </div>
+        )}
       </div>
     </>
   );
